@@ -3,6 +3,11 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 
+'use client'
+
+import { useState } from 'react'
+import { useRouter } from 'next/navigation'
+
 export default function CreateSession() {
   const router = useRouter()
   const [session, setSession] = useState({
@@ -12,6 +17,8 @@ export default function CreateSession() {
     comment: '',
   })
   const [duration, setDuration] = useState('')
+  const [isLoading, setIsLoading] = useState(false)
+  const [error, setError] = useState('')
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     setSession({ ...session, [e.target.name]: e.target.value })
@@ -38,6 +45,9 @@ export default function CreateSession() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+    setIsLoading(true)
+    setError('')
+    console.log('Submitting session:', session)
     try {
       const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/sessions`, {
         method: 'POST',
@@ -46,19 +56,25 @@ export default function CreateSession() {
         },
         body: JSON.stringify({ ...session, duration }),
       })
+      console.log('Response status:', response.status)
       if (!response.ok) {
         throw new Error('Failed to create session')
       }
+      const data = await response.json()
+      console.log('Created session:', data)
       router.push('/')
     } catch (error) {
       console.error('Error creating session:', error)
-      // You could set an error state here and display it to the user
+      setError('Failed to create session. Please try again.')
+    } finally {
+      setIsLoading(false)
     }
   }
 
   return (
     <div>
       <h1 className="text-2xl font-bold mb-4">Create New Running Session</h1>
+      {error && <p className="text-red-500 mb-4">{error}</p>}
       <form onSubmit={handleSubmit} className="space-y-4">
         <div>
           <label htmlFor="title" className="block">Session Title*</label>
@@ -116,8 +132,12 @@ export default function CreateSession() {
             className="border p-2 w-full"
           />
         </div>
-        <button type="submit" className="bg-blue-500 text-white px-4 py-2 rounded">
-          Create Session
+        <button 
+          type="submit" 
+          className="bg-blue-500 text-white px-4 py-2 rounded disabled:bg-blue-300"
+          disabled={isLoading}
+        >
+          {isLoading ? 'Creating...' : 'Create Session'}
         </button>
       </form>
     </div>
