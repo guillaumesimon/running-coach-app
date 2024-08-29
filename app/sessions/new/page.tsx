@@ -3,10 +3,6 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 
-'use client'
-
-import { useState } from 'react'
-import { useRouter } from 'next/navigation'
 
 export default function CreateSession() {
   const router = useRouter()
