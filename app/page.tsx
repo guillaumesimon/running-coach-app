@@ -1,13 +1,22 @@
 import Link from 'next/link'
 
-async function getSessions() {
+interface Session {
+  id: string;
+  title: string;
+  date: string;
+  distance: number;
+  targetPace: string;
+  duration: string;
+}
+
+async function getSessions(): Promise<Session[]> {
   try {
     console.log('Fetching sessions from:', `${process.env.NEXT_PUBLIC_API_URL}/api/sessions`);
     const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/sessions`, { cache: 'no-store' });
     if (!res.ok) {
       throw new Error(`Failed to fetch sessions: ${res.status} ${res.statusText}`);
     }
-    const data = await res.json();
+    const data: Session[] = await res.json();
     console.log('Fetched sessions:', data);
     return data;
   } catch (error) {
@@ -25,7 +34,7 @@ export default async function Home() {
       <h1 className="text-2xl font-bold mb-4">Your Running Sessions</h1>
       {sessions.length > 0 ? (
         <ul>
-          {sessions.map(session => (
+          {sessions.map((session: Session) => (
             <li key={session.id} className="mb-2">
               <Link href={`/sessions/${session.id}`}>
                 {session.title} - {session.date}
