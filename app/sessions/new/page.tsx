@@ -64,7 +64,7 @@ export default function CreateSession() {
       router.push('/')
     } catch (error) {
       console.error('Error creating session:', error)
-      setError(`Failed to create session. Please try again. Error: ${error.message}`)
+      setError(`Failed to create session. Please try again. ${error instanceof Error ? error.message : String(error)}`)
     } finally {
       setIsLoading(false)
     }
