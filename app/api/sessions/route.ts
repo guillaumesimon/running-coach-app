@@ -13,12 +13,18 @@ export async function GET() {
 }
 
 export async function POST(request: Request) {
-  const data = await request.json();
-  const newSession = {
-    id: (sessions.length + 1).toString(),
-    ...data,
-    date: new Date().toISOString().split('T')[0], // Current date
-  };
-  sessions.push(newSession);
-  return NextResponse.json(newSession, { status: 201 });
+  try {
+    const data = await request.json();
+    const newSession = {
+      id: (sessions.length + 1).toString(),
+      ...data,
+      date: new Date().toISOString().split('T')[0], // Current date
+    };
+    sessions.push(newSession);
+    console.log('Created new session:', newSession);
+    return NextResponse.json(newSession, { status: 201 });
+  } catch (error) {
+    console.error('Error in POST /api/sessions:', error);
+    return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
+  }
 }

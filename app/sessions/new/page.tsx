@@ -38,17 +38,21 @@ export default function CreateSession() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/sessions`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(session),
-    })
-    if (response.ok) {
+    try {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/sessions`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ ...session, duration }),
+      })
+      if (!response.ok) {
+        throw new Error('Failed to create session')
+      }
       router.push('/')
-    } else {
-      console.error('Failed to create session')
+    } catch (error) {
+      console.error('Error creating session:', error)
+      // You could set an error state here and display it to the user
     }
   }
 
