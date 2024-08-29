@@ -7,6 +7,8 @@ let sessions = [
 ];
 
 export async function GET() {
+  console.log('GET /api/sessions called');
+  console.log('Returning sessions:', sessions);
   return NextResponse.json(sessions);
 }
 
