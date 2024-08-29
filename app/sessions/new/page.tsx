@@ -38,10 +38,18 @@ export default function CreateSession() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    // TODO: Send session data to backend and generate coach speech
-    console.log('Session created:', session)
-    // For now, we'll just redirect to the home page
-    router.push('/')
+    const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/sessions`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(session),
+    })
+    if (response.ok) {
+      router.push('/')
+    } else {
+      console.error('Failed to create session')
+    }
   }
 
   return (
