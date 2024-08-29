@@ -45,7 +45,7 @@ export default function CreateSession() {
     setError('')
     console.log('Submitting session:', session)
     try {
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/sessions`, {
+      const response = await fetch('/api/sessions', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -53,15 +53,18 @@ export default function CreateSession() {
         body: JSON.stringify({ ...session, duration }),
       })
       console.log('Response status:', response.status)
+      console.log('Response headers:', response.headers)
+      const responseText = await response.text()
+      console.log('Response text:', responseText)
       if (!response.ok) {
-        throw new Error('Failed to create session')
+        throw new Error(`Failed to create session: ${response.status} ${response.statusText}`)
       }
-      const data = await response.json()
+      const data = JSON.parse(responseText)
       console.log('Created session:', data)
       router.push('/')
     } catch (error) {
       console.error('Error creating session:', error)
-      setError('Failed to create session. Please try again.')
+      setError(`Failed to create session. Please try again. Error: ${error.message}`)
     } finally {
       setIsLoading(false)
     }
