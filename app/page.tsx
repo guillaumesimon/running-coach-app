@@ -11,32 +11,16 @@ interface Session {
 }
 
 async function getSessions(): Promise<Session[]> {
-  console.log('Fetching sessions from:', `${process.env.NEXT_PUBLIC_API_URL}/api/sessions`);
-  const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/sessions`, { 
-    cache: 'no-store',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-  });
-  console.log('Response status:', res.status);
-  console.log('Response headers:', JSON.stringify(Object.fromEntries(res.headers.entries()), null, 2));
-  
+  const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/sessions`, { cache: 'no-store' });
   if (!res.ok) {
-    const errorText = await res.text();
-    console.error('Error response body:', errorText);
-    throw new Error(`Failed to fetch sessions: ${res.status} ${res.statusText}. Body: ${errorText}`);
+    throw new Error(`Failed to fetch sessions: ${res.status} ${res.statusText}`);
   }
-  
-  const data = await res.json();
-  console.log('Fetched sessions:', data);
-  return data;
+  return res.json();
 }
 
 export default async function Home() {
   try {
-    console.log('Rendering Home page');
     const sessions = await getSessions();
-    console.log('Sessions fetched successfully:', sessions);
 
     return (
       <div>
@@ -46,7 +30,7 @@ export default async function Home() {
             {sessions.map((session: Session) => (
               <li key={session.id} className="mb-2">
                 <Link href={`/sessions/${session.id}`}>
-                  {session.title} - {session.date}
+                  {session.date} - {session.title} ({session.distance} km)
                 </Link>
               </li>
             ))}
@@ -60,11 +44,11 @@ export default async function Home() {
       </div>
     )
   } catch (error) {
-    console.error('Error in Home component:', error);
+    console.error('Error fetching sessions:', error);
     return (
       <div>
         <h1 className="text-2xl font-bold mb-4">Error fetching sessions</h1>
-        <p>Error details: {error instanceof Error ? error.message : String(error)}</p>
+        <p>{error instanceof Error ? error.message : String(error)}</p>
         <p>API URL: {process.env.NEXT_PUBLIC_API_URL}</p>
         <Link href="/sessions/new" className="mt-4 inline-block bg-blue-500 text-white px-4 py-2 rounded">
           Create New Session

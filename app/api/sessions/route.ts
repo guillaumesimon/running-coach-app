@@ -15,21 +15,14 @@ interface Session {
 
 async function getSessions(): Promise<Session[]> {
   console.log('Fetching sessions from KV store');
-  const sessions = await kv.get<Session[]>(SESSIONS_KEY);
+  const sessions = await kv.get<Session[]>(SESSIONS_KEY) || [];
   console.log('Raw sessions data from KV:', sessions);
 
-  if (!sessions) {
-    console.log('No sessions found, initializing with default data');
-    const initialSessions: Session[] = [
-      { id: '1', title: 'Morning Run', date: '2023-04-01', distance: 5, targetPace: '05:30', duration: '00:27:30' },
-      { id: '2', title: 'Evening Jog', date: '2023-03-30', distance: 3, targetPace: '06:00', duration: '00:18:00' },
-    ];
-    await kv.set(SESSIONS_KEY, initialSessions);
-    return initialSessions;
-  }
+  // Sort sessions by date, newest first
+  const sortedSessions = sessions.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
 
-  console.log('Returning sessions:', sessions);
-  return sessions;
+  console.log('Returning sorted sessions:', sortedSessions);
+  return sortedSessions;
 }
 
 export async function GET(req: Request) {
