@@ -16,7 +16,7 @@ interface Session {
 async function getSessions(): Promise<Session[]> {
   console.log('Fetching sessions from KV store');
   const sessions = await kv.get<Session[]>(SESSIONS_KEY);
-  console.log('Raw sessions data:', sessions);
+  console.log('Raw sessions data from KV:', sessions);
 
   if (!sessions) {
     console.log('No sessions found, initializing with default data');
@@ -68,7 +68,7 @@ export async function POST(req: Request) {
     sessions.push(newSession);
     console.log('Saving sessions:', sessions);
     await kv.set(SESSIONS_KEY, sessions);
-    console.log('Created new session:', newSession);
+    console.log('Sessions saved, new KV store content:', await kv.get(SESSIONS_KEY));
     return new NextResponse(JSON.stringify(newSession), {
       status: 201,
       headers: { 'Content-Type': 'application/json' },
