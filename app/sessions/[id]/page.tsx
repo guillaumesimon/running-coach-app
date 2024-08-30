@@ -14,6 +14,7 @@ async function getSession(id: string): Promise<Session> {
   console.log(`Fetching session with id: ${id}`);
   const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/sessions/${id}`, { cache: 'no-store' });
   console.log('Response status:', res.status);
+  console.log('Response headers:', res.headers);
   
   if (!res.ok) {
     const errorText = await res.text();
