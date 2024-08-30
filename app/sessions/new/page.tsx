@@ -53,7 +53,6 @@ export default function CreateSession() {
         body: JSON.stringify({ ...session, duration }),
       })
       console.log('Response status:', response.status)
-      console.log('Response headers:', response.headers)
       const responseText = await response.text()
       console.log('Response text:', responseText)
       if (!response.ok) {
@@ -61,7 +60,7 @@ export default function CreateSession() {
       }
       const data = JSON.parse(responseText)
       console.log('Created session:', data)
-      router.push('/')
+      router.push(`/sessions/${data.id}`)  // Redirect to the new session's page
     } catch (error) {
       console.error('Error creating session:', error)
       setError(`Failed to create session. Please try again. ${error instanceof Error ? error.message : String(error)}`)

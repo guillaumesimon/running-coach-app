@@ -8,6 +8,7 @@ let sessions = [
 
 export async function GET(req: Request) {
   console.log('GET /api/sessions called');
+  console.log('Request headers:', Object.fromEntries(req.headers.entries()));
   console.log('Current sessions:', sessions);
   return new NextResponse(JSON.stringify(sessions), {
     status: 200,
