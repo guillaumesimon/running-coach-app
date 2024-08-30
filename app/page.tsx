@@ -7,26 +7,18 @@ interface Session {
   distance: number;
   targetPace: string;
   duration: string;
+  comment?: string;
 }
 
 async function getSessions(): Promise<Session[]> {
-  try {
-    console.log('Fetching sessions from:', `${process.env.NEXT_PUBLIC_API_URL}/api/sessions`);
-    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/sessions`, { cache: 'no-store' });
-    if (!res.ok) {
-      throw new Error(`Failed to fetch sessions: ${res.status} ${res.statusText}`);
-    }
-    const data: Session[] = await res.json();
-    console.log('Fetched sessions:', data);
-    return data;
-  } catch (error) {
-    console.error('Error fetching sessions:', error);
-    return [];
+  const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/sessions`, { cache: 'no-store' });
+  if (!res.ok) {
+    throw new Error('Failed to fetch sessions');
   }
+  return res.json();
 }
 
 export default async function Home() {
-  console.log('Rendering Home page');
   const sessions = await getSessions();
 
   return (
