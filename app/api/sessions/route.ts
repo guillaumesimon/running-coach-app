@@ -15,32 +15,21 @@ interface Session {
 
 async function getSessions(): Promise<Session[]> {
   console.log('Fetching sessions from KV store');
-  const sessionsData = await kv.get(SESSIONS_KEY);
-  console.log('Raw sessions data:', sessionsData);
+  const sessions = await kv.get<Session[]>(SESSIONS_KEY);
+  console.log('Raw sessions data:', sessions);
 
-  if (!sessionsData) {
+  if (!sessions) {
     console.log('No sessions found, initializing with default data');
     const initialSessions: Session[] = [
       { id: '1', title: 'Morning Run', date: '2023-04-01', distance: 5, targetPace: '05:30', duration: '00:27:30' },
       { id: '2', title: 'Evening Jog', date: '2023-03-30', distance: 3, targetPace: '06:00', duration: '00:18:00' },
     ];
-    await kv.set(SESSIONS_KEY, JSON.stringify(initialSessions));
+    await kv.set(SESSIONS_KEY, initialSessions);
     return initialSessions;
   }
 
-  if (typeof sessionsData === 'string') {
-    try {
-      const parsedSessions = JSON.parse(sessionsData) as Session[];
-      console.log('Parsed sessions:', parsedSessions);
-      return parsedSessions;
-    } catch (error) {
-      console.error('Error parsing sessions data:', error);
-      return [];
-    }
-  }
-
-  console.log('Sessions data is not a string:', sessionsData);
-  return [];
+  console.log('Returning sessions:', sessions);
+  return sessions;
 }
 
 export async function GET(req: Request) {
@@ -73,12 +62,12 @@ export async function POST(req: Request) {
       date: new Date().toISOString().split('T')[0],
       distance: Number(data.distance),
       targetPace: data.targetPace,
-      duration: data.duration,
-      comment: data.comment,
+      duration: data.duration || '',
+      comment: data.comment || '',
     };
     sessions.push(newSession);
     console.log('Saving sessions:', sessions);
-    await kv.set(SESSIONS_KEY, JSON.stringify(sessions));
+    await kv.set(SESSIONS_KEY, sessions);
     console.log('Created new session:', newSession);
     return new NextResponse(JSON.stringify(newSession), {
       status: 201,
