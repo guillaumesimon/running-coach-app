@@ -1,23 +1,4 @@
 import { NextResponse } from 'next/server';
-import Cors from 'cors';
-
-// Initialize the cors middleware
-const cors = Cors({
-  methods: ['GET', 'HEAD', 'POST', 'OPTIONS'],
-});
-
-// Helper method to wait for a middleware to execute before continuing
-// And to throw an error when an error happens in a middleware
-function runMiddleware(req: Request, res: NextResponse, fn: Function) {
-  return new Promise((resolve, reject) => {
-    fn(req, res, (result: any) => {
-      if (result instanceof Error) {
-        return reject(result)
-      }
-      return resolve(result)
-    })
-  })
-}
 
 // This is a mock database. In a real application, you'd use a actual database.
 let sessions = [
@@ -26,24 +7,34 @@ let sessions = [
 ];
 
 export async function GET(req: Request) {
-  const res = NextResponse.next();
-  await runMiddleware(req, res, cors);
-  
   console.log('GET /api/sessions called');
   console.log('Returning sessions:', sessions);
-  return NextResponse.json(sessions);
+  return new NextResponse(JSON.stringify(sessions), {
+    status: 200,
+    headers: {
+      'Content-Type': 'application/json',
+      'Access-Control-Allow-Origin': '*',
+      'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
+      'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+    },
+  });
 }
 
 export async function POST(req: Request) {
-  const res = NextResponse.next();
-  await runMiddleware(req, res, cors);
-
   console.log('POST /api/sessions called');
   try {
     const data = await req.json();
     console.log('Received data:', data);
     if (!data.title || !data.distance || !data.targetPace) {
-      return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
+      return new NextResponse(JSON.stringify({ error: 'Missing required fields' }), {
+        status: 400,
+        headers: {
+          'Content-Type': 'application/json',
+          'Access-Control-Allow-Origin': '*',
+          'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
+          'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+        },
+      });
     }
     const newSession = {
       id: (sessions.length + 1).toString(),
@@ -52,13 +43,36 @@ export async function POST(req: Request) {
     };
     sessions.push(newSession);
     console.log('Created new session:', newSession);
-    return NextResponse.json(newSession, { status: 201 });
+    return new NextResponse(JSON.stringify(newSession), {
+      status: 201,
+      headers: {
+        'Content-Type': 'application/json',
+        'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
+        'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+      },
+    });
   } catch (error) {
     console.error('Error in POST /api/sessions:', error);
-    if (error instanceof Error) {
-      return NextResponse.json({ error: 'Internal Server Error', details: error.message }, { status: 500 });
-    } else {
-      return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
-    }
+    return new NextResponse(JSON.stringify({ error: 'Internal Server Error', details: error.message }), {
+      status: 500,
+      headers: {
+        'Content-Type': 'application/json',
+        'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
+        'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+      },
+    });
   }
+}
+
+export async function OPTIONS(req: Request) {
+  return new NextResponse(null, {
+    status: 204,
+    headers: {
+      'Access-Control-Allow-Origin': '*',
+      'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
+      'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+    },
+  });
 }
