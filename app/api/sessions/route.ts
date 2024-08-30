@@ -3,18 +3,27 @@ import { kv } from '@vercel/kv';
 
 const SESSIONS_KEY = 'running_sessions';
 
-async function getSessions() {
-  let sessions = await kv.get(SESSIONS_KEY);
+interface Session {
+  id: string;
+  title: string;
+  date: string;
+  distance: number;
+  targetPace: string;
+  duration: string;
+  comment?: string;
+}
+
+async function getSessions(): Promise<Session[]> {
+  const sessions = await kv.get<string>(SESSIONS_KEY);
   if (!sessions) {
-    sessions = [
+    const initialSessions: Session[] = [
       { id: '1', title: 'Morning Run', date: '2023-04-01', distance: 5, targetPace: '05:30', duration: '00:27:30' },
       { id: '2', title: 'Evening Jog', date: '2023-03-30', distance: 3, targetPace: '06:00', duration: '00:18:00' },
     ];
-    await kv.set(SESSIONS_KEY, JSON.stringify(sessions));
-  } else if (typeof sessions === 'string') {
-    sessions = JSON.parse(sessions);
+    await kv.set(SESSIONS_KEY, JSON.stringify(initialSessions));
+    return initialSessions;
   }
-  return sessions;
+  return JSON.parse(sessions) as Session[];
 }
 
 export async function GET(req: Request) {
@@ -41,10 +50,14 @@ export async function POST(req: Request) {
       });
     }
     const sessions = await getSessions();
-    const newSession = {
+    const newSession: Session = {
       id: (sessions.length + 1).toString(),
-      ...data,
-      date: new Date().toISOString().split('T')[0], // Current date
+      title: data.title,
+      date: new Date().toISOString().split('T')[0],
+      distance: data.distance,
+      targetPace: data.targetPace,
+      duration: data.duration,
+      comment: data.comment,
     };
     sessions.push(newSession);
     await kv.set(SESSIONS_KEY, JSON.stringify(sessions));
