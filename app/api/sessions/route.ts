@@ -8,7 +8,7 @@ let sessions = [
 
 export async function GET(req: Request) {
   console.log('GET /api/sessions called');
-  console.log('Returning sessions:', sessions);
+  console.log('Current sessions:', sessions);
   return new NextResponse(JSON.stringify(sessions), {
     status: 200,
     headers: {
@@ -54,10 +54,8 @@ export async function POST(req: Request) {
     });
   } catch (error) {
     console.error('Error in POST /api/sessions:', error);
-    return new NextResponse(JSON.stringify({ 
-      error: 'Internal Server Error', 
-      details: error instanceof Error ? error.message : 'Unknown error'
-    }), {
+    const errorMessage = error instanceof Error ? error.message : 'An unknown error occurred';
+    return new NextResponse(JSON.stringify({ error: 'Internal Server Error', details: errorMessage }), {
       status: 500,
       headers: {
         'Content-Type': 'application/json',
