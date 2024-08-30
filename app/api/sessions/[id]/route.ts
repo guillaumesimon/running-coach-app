@@ -1,16 +1,42 @@
 import { NextResponse } from 'next/server';
+import { kv } from '@vercel/kv';
 
-// This should be replaced with a database query in a real application
-let sessions = [
-  { id: '1', title: 'Morning Run', date: '2023-04-01', distance: 5, targetPace: '05:30', duration: '00:27:30' },
-  { id: '2', title: 'Evening Jog', date: '2023-03-30', distance: 3, targetPace: '06:00', duration: '00:18:00' },
-];
+const SESSIONS_KEY = 'running_sessions';
 
-export async function GET(request: Request, { params }: { params: { id: string } }) {
-  const session = sessions.find(s => s.id === params.id);
-  if (session) {
-    return NextResponse.json(session);
-  } else {
-    return new NextResponse('Session not found', { status: 404 });
+interface Session {
+  id: string;
+  title: string;
+  date: string;
+  distance: number;
+  targetPace: string;
+  duration: string;
+  comment?: string;
+}
+
+async function getSession(id: string): Promise<Session | null> {
+  const sessionsJson = await kv.get<string>(SESSIONS_KEY);
+  if (!sessionsJson) return null;
+  
+  const sessions = JSON.parse(sessionsJson) as Session[];
+  return sessions.find(session => session.id === id) || null;
+}
+
+export async function GET(
+  request: Request,
+  { params }: { params: { id: string } }
+) {
+  console.log(`GET /api/sessions/${params.id} called`);
+  const session = await getSession(params.id);
+  
+  if (!session) {
+    return new NextResponse(JSON.stringify({ error: 'Session not found' }), {
+      status: 404,
+      headers: { 'Content-Type': 'application/json' },
+    });
   }
+
+  return new NextResponse(JSON.stringify(session), {
+    status: 200,
+    headers: { 'Content-Type': 'application/json' },
+  });
 }

@@ -51,7 +51,7 @@ export async function POST(req: Request) {
     }
     const sessions = await getSessions();
     const newSession: Session = {
-      id: (sessions.length + 1).toString(),
+      id: (Math.max(...sessions.map(s => parseInt(s.id)), 0) + 1).toString(),
       title: data.title,
       date: new Date().toISOString().split('T')[0],
       distance: data.distance,
