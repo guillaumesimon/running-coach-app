@@ -18,8 +18,8 @@ async function getSessions(): Promise<Session[]> {
   const sessions = await kv.get<Session[]>(SESSIONS_KEY) || [];
   console.log('Raw sessions data from KV:', sessions);
 
-  // Sort sessions by date, newest first
-  const sortedSessions = sessions.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+  // Sort sessions by ID number, newest (highest ID) first
+  const sortedSessions = sessions.sort((a, b) => parseInt(b.id) - parseInt(a.id));
 
   console.log('Returning sorted sessions:', sortedSessions);
   return sortedSessions;

@@ -30,7 +30,7 @@ export default async function Home() {
             {sessions.map((session: Session) => (
               <li key={session.id} className="mb-2">
                 <Link href={`/sessions/${session.id}`}>
-                  {session.date} - {session.title} ({session.distance} km)
+                  Session {session.id} - {session.date} - {session.title} ({session.distance} km)
                 </Link>
               </li>
             ))}
