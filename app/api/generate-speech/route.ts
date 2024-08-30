@@ -43,7 +43,13 @@ export async function POST(request: Request) {
       ]
     });
 
-    const generatedText = message.content[0].text;
+    let generatedText = '';
+    if (message.content && message.content.length > 0) {
+      const firstContent = message.content[0];
+      if (firstContent.type === 'text') {
+        generatedText = firstContent.text;
+      }
+    }
 
     return NextResponse.json({ generatedText });
   } catch (error) {
