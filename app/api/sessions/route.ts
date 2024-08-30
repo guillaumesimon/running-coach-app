@@ -54,7 +54,10 @@ export async function POST(req: Request) {
     });
   } catch (error) {
     console.error('Error in POST /api/sessions:', error);
-    return new NextResponse(JSON.stringify({ error: 'Internal Server Error', details: error.message }), {
+    return new NextResponse(JSON.stringify({ 
+      error: 'Internal Server Error', 
+      details: error instanceof Error ? error.message : 'Unknown error'
+    }), {
       status: 500,
       headers: {
         'Content-Type': 'application/json',
