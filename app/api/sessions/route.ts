@@ -14,8 +14,12 @@ interface Session {
 }
 
 async function getSessions(): Promise<Session[]> {
-  const sessions = await kv.get<string>(SESSIONS_KEY);
-  if (!sessions) {
+  console.log('Fetching sessions from KV store');
+  const sessionsData = await kv.get(SESSIONS_KEY);
+  console.log('Raw sessions data:', sessionsData);
+
+  if (!sessionsData) {
+    console.log('No sessions found, initializing with default data');
     const initialSessions: Session[] = [
       { id: '1', title: 'Morning Run', date: '2023-04-01', distance: 5, targetPace: '05:30', duration: '00:27:30' },
       { id: '2', title: 'Evening Jog', date: '2023-03-30', distance: 3, targetPace: '06:00', duration: '00:18:00' },
@@ -23,13 +27,26 @@ async function getSessions(): Promise<Session[]> {
     await kv.set(SESSIONS_KEY, JSON.stringify(initialSessions));
     return initialSessions;
   }
-  return JSON.parse(sessions) as Session[];
+
+  if (typeof sessionsData === 'string') {
+    try {
+      const parsedSessions = JSON.parse(sessionsData) as Session[];
+      console.log('Parsed sessions:', parsedSessions);
+      return parsedSessions;
+    } catch (error) {
+      console.error('Error parsing sessions data:', error);
+      return [];
+    }
+  }
+
+  console.log('Sessions data is not a string:', sessionsData);
+  return [];
 }
 
 export async function GET(req: Request) {
   console.log('GET /api/sessions called');
   const sessions = await getSessions();
-  console.log('Current sessions:', sessions);
+  console.log('Returning sessions:', sessions);
   return new NextResponse(JSON.stringify(sessions), {
     status: 200,
     headers: {
@@ -41,17 +58,7 @@ export async function GET(req: Request) {
 export async function POST(req: Request) {
   console.log('POST /api/sessions called');
   try {
-    let data;
-    try {
-      data = await req.json();
-    } catch (error) {
-      console.error('Error parsing request body:', error);
-      return new NextResponse(JSON.stringify({ error: 'Invalid JSON in request body' }), {
-        status: 400,
-        headers: { 'Content-Type': 'application/json' },
-      });
-    }
-
+    const data = await req.json();
     console.log('Received data:', data);
     if (!data.title || !data.distance || !data.targetPace) {
       return new NextResponse(JSON.stringify({ error: 'Missing required fields' }), {
@@ -70,6 +77,7 @@ export async function POST(req: Request) {
       comment: data.comment,
     };
     sessions.push(newSession);
+    console.log('Saving sessions:', sessions);
     await kv.set(SESSIONS_KEY, JSON.stringify(sessions));
     console.log('Created new session:', newSession);
     return new NextResponse(JSON.stringify(newSession), {
