@@ -41,7 +41,17 @@ export async function GET(req: Request) {
 export async function POST(req: Request) {
   console.log('POST /api/sessions called');
   try {
-    const data = await req.json();
+    let data;
+    try {
+      data = await req.json();
+    } catch (error) {
+      console.error('Error parsing request body:', error);
+      return new NextResponse(JSON.stringify({ error: 'Invalid JSON in request body' }), {
+        status: 400,
+        headers: { 'Content-Type': 'application/json' },
+      });
+    }
+
     console.log('Received data:', data);
     if (!data.title || !data.distance || !data.targetPace) {
       return new NextResponse(JSON.stringify({ error: 'Missing required fields' }), {
@@ -54,7 +64,7 @@ export async function POST(req: Request) {
       id: (Math.max(...sessions.map(s => parseInt(s.id)), 0) + 1).toString(),
       title: data.title,
       date: new Date().toISOString().split('T')[0],
-      distance: data.distance,
+      distance: Number(data.distance),
       targetPace: data.targetPace,
       duration: data.duration,
       comment: data.comment,
